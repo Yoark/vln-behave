@@ -83,8 +83,7 @@ The code mainly contain two parts:
 <a id="data-log"></a>
 # Integrate Data Log into Your Agent
 
-Example 1:
-Example 2:
+Ready soon!
 
 <a id="data-analysis"></a>
 # Data Creation and Experiment Scripts
