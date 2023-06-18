@@ -1,11 +1,12 @@
 # from torch import gt
-from ipdb import launch_ipdb_on_exception
-import os
 import argparse
-from ..utils.file_utils import load_json, load_jsonl
-from ..utils.object_utils import boot_draw_intervals
-from ..utils.direction_utils import get_sample_info, bootstrap_sample
+import os
 
+from ipdb import launch_ipdb_on_exception
+
+from utils.direction_utils import bootstrap_sample, get_sample_info
+from utils.file_utils import load_json, load_jsonl
+from utils.object_utils import boot_draw_intervals
 
 if __name__ == "__main__":
     # Test objects.py

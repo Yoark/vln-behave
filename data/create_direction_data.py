@@ -1,7 +1,8 @@
-import os
 import argparse
-from ..utils.direction_utils import append_instruction_to_noend
-from ..utils.file_utils import load_jsonl, save_jsonl
+import os
+
+from utils.direction_utils import append_instruction_to_noend
+from utils.file_utils import load_jsonl, save_jsonl
 
 # find more templates in commmented code below
 

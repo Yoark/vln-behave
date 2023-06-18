@@ -1,12 +1,14 @@
-import os
-import json
 import argparse
-from ..utils.file_utils import load_jsonl, load_json
-from ..utils.room_utils import (
-    process_result_n_hop,
-    draw_distribution_on_delta_to_goal_room,
-)
+import json
+import os
+
 from ipdb import launch_ipdb_on_exception
+
+from utils.file_utils import load_json, load_jsonl
+from utils.room_utils import (
+    draw_distribution_on_delta_to_goal_room,
+    process_result_n_hop,
+)
 
 if __name__ == "__main__":
     args = argparse.ArgumentParser()
@@ -33,8 +35,15 @@ if __name__ == "__main__":
         default=False,
         help="use argmax next action rather than a weighted next action when computing the distance",
     )
-    args.add_argument('--bootstrap_num', type=int, default=100, help='the number of bootstrap samples')
-    args.add_argument('--region_file_dir', type=str, default='/Users/zijiao/home/research/unit-vln/code/region_data/scan_region.json', help="the region file dir")
+    args.add_argument(
+        "--bootstrap_num", type=int, default=100, help="the number of bootstrap samples"
+    )
+    args.add_argument(
+        "--region_file_dir",
+        type=str,
+        default="/Users/zijiao/home/research/unit-vln/code/region_data/scan_region.json",
+        help="the region file dir",
+    )
 
     args = args.parse_args()
     data_dir = args.data_dir
@@ -60,16 +69,23 @@ if __name__ == "__main__":
             f"{result_dir}/{hop}_hop/submit_{hop}_hop_no_intervene_dataset_0.json"
         )
 
-    instr_id2no_intervention_result = {item['instr_id']: item for item in hop_result[1]}
-    instr_id2intervention_dataset = {item['instruction_id']: item for item in hop_data[0]}
+    instr_id2no_intervention_result = {item["instr_id"]: item for item in hop_result[1]}
+    instr_id2intervention_dataset = {
+        item["instruction_id"]: item for item in hop_data[0]
+    }
 
     with open(args.region_file_dir) as t:
         scan_region = json.load(t)
 
     with launch_ipdb_on_exception():
-        hop_processed = process_result_n_hop(hop_result, hop_data, argmax=False, scanregion=None, 
-                                             instr_id2no_intervene_result=instr_id2no_intervention_result, 
-                                             instr_id2intervene_dataset=instr_id2intervention_dataset)
+        hop_processed = process_result_n_hop(
+            hop_result,
+            hop_data,
+            argmax=False,
+            scanregion=None,
+            instr_id2no_intervene_result=instr_id2no_intervention_result,
+            instr_id2intervene_dataset=instr_id2intervention_dataset,
+        )
         argmax = True if args.argmax_next_action else False
         draw_distribution_on_delta_to_goal_room(
             hop_processed,

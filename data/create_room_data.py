@@ -1,8 +1,10 @@
-import os
 import argparse
+import os
+
 import matplotlib.pyplot as plt
-from ..utils.room_utils import create_exact_x_hop_dataset_with_no_region_loop
-from ..utils.file_utils import load_jsonl, load_json, save_jsonl
+
+from utils.file_utils import load_json, load_jsonl, save_jsonl
+from utils.room_utils import create_exact_x_hop_dataset_with_no_region_loop
 
 if __name__ == "__main__":
     args = argparse.ArgumentParser()
@@ -31,7 +33,7 @@ if __name__ == "__main__":
         os.path.join(args.region_dir, "scan_viewpoint_id.json")
     )
     for x in range(2, 9):
-        # * note result_no_end is only needed because we use it to retrieve the end viewpoint of truncation path as well as 
+        # * note result_no_end is only needed because we use it to retrieve the end viewpoint of truncation path as well as
         # * the candidate viewpoints for the end viewpoint
         # * the end viewpoint is a result of following ground truth path, therefore is the last node of GT path.
         results = create_exact_x_hop_dataset_with_no_region_loop(

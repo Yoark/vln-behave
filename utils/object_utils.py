@@ -1,41 +1,62 @@
 # draw the abs difference between the object direction and the model predicted direction
+import copy
 import math
 import os
-from collections import defaultdict, namedtuple
 import pathlib
+from collections import defaultdict, namedtuple
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from tqdm import tqdm
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib as mpl
-import copy
+from tqdm import tqdm
 
-from ..utils.file_utils import save_json
+from utils.file_utils import save_json
 
 # set figure attr
 # sns.set(color_codes=True)
 # sns.set(rc={'figure.figsize':(12,10)})
 
-category_mapping_dir = pathlib.Path('/Users/zijiao/home/research/unit-vln/Matterport/metadata/category_mapping.tsv')
-filter_out_objects = {'misc', 'objects','unlabeled','void','wall', 'appliances', 'ceiling', 'floor', "lighting", "door", "railing", "stairs", "window", "shelving"}
+category_mapping_dir = pathlib.Path(
+    "/Users/zijiao/home/research/unit-vln/Matterport/metadata/category_mapping.tsv"
+)
+filter_out_objects = {
+    "misc",
+    "objects",
+    "unlabeled",
+    "void",
+    "wall",
+    "appliances",
+    "ceiling",
+    "floor",
+    "lighting",
+    "door",
+    "railing",
+    "stairs",
+    "window",
+    "shelving",
+}
 go_toward_template = ["Walk towards the"]
-category_mapping = pd.read_csv(category_mapping_dir, sep='\t')
-image_width =  640
+category_mapping = pd.read_csv(category_mapping_dir, sep="\t")
+image_width = 640
 image_height = 480
 wfov = math.radians(75)
 
 
 def template_go_toward(instruction: str, obj_name: str, with_stop=False) -> str:
-    if instruction[-1] == '.':
-        new_instruction = instruction + ' ' + go_toward_template[0] + ' ' + obj_name + '.'
+    if instruction[-1] == ".":
+        new_instruction = (
+            instruction + " " + go_toward_template[0] + " " + obj_name + "."
+        )
     else:
-        new_instruction = instruction + '.' + ' ' + go_toward_template[0] + ' ' + obj_name + '.'
+        new_instruction = (
+            instruction + "." + " " + go_toward_template[0] + " " + obj_name + "."
+        )
     if with_stop:
-        new_instruction +=' This is your destination.' 
-        
+        new_instruction += " This is your destination."
+
     return new_instruction
+
 
 def get_viewId_heading(viewId):
     return (viewId % 12) * math.radians(30)
@@ -45,47 +66,49 @@ def dist_left_center_obj(bbox):
     """
     Compute the x coords of the center, which is center of bounding box in the image
     """
-    return bbox[0] + bbox[2]/2
+    return bbox[0] + bbox[2] / 2
+
 
 def add_heading_info(item: dict, only_one=False):
     """# this computes obj heading for each view at the viewpoint and store them."""
     # add avg heading info for object
-    for obj_id,obj_attribs in item.items():
+    for obj_id, obj_attribs in item.items():
         # horizon_viewids = [viewId for viewId in obj_attribs['visible_pos'] if 12 <= viewId < 24]
-        horizon_viewids = [viewId for viewId in obj_attribs['visible_pos']]
+        horizon_viewids = [viewId for viewId in obj_attribs["visible_pos"]]
         # if not horizon_viewids:
-            # continue
+        # continue
         # base_headings = [get_viewId_heading(viewid) for viewid in obj_attribs['visible_pos'] if 12 <= viewid <24]
         base_headings = [get_viewId_heading(viewid) for viewid in horizon_viewids]
-        
 
-        obj_attribs['norm_headings_radians'] = []
-        obj_attribs['norm_headings_degree'] = []
-        obj_attribs['has_bbox'] = True
+        obj_attribs["norm_headings_radians"] = []
+        obj_attribs["norm_headings_degree"] = []
+        obj_attribs["has_bbox"] = True
         # obj_attribs['mod_headings'] = []
-        obj_attribs['avg_heading'] = 0
-        if not obj_attribs['bbox2d']:
-            obj_attribs['has_bbox'] = False
+        obj_attribs["avg_heading"] = 0
+        if not obj_attribs["bbox2d"]:
+            obj_attribs["has_bbox"] = False
             continue
         # box_w_h = []
-        for bbox, base_heading in zip(obj_attribs['bbox2d'], base_headings):
-            assert 0 <= base_heading <= 2*math.pi
+        for bbox, base_heading in zip(obj_attribs["bbox2d"], base_headings):
+            assert 0 <= base_heading <= 2 * math.pi
             # rel_heading = (dist_left_center_obj(bbox) - image_width/2)/image_width * wfov
-            rel_heading = np.arctan((dist_left_center_obj(bbox) - image_width/2)/415.692193817)
+            rel_heading = np.arctan(
+                (dist_left_center_obj(bbox) - image_width / 2) / 415.692193817
+            )
             # box_w_h.append(bbox[2] * bbox[3])
             # assert <= rel_heading <=
-            norm_heading = base_heading + rel_heading # in radians
+            norm_heading = base_heading + rel_heading  # in radians
             # mod_heading = normalize_degree(norm_heading)
-            obj_attribs['norm_headings_radians'].append(norm_heading)
-            obj_attribs['norm_headings_degree'].append(math.degrees(norm_heading))
+            obj_attribs["norm_headings_radians"].append(norm_heading)
+            obj_attribs["norm_headings_degree"].append(math.degrees(norm_heading))
             if only_one:
                 break
             # obj_attribs['mod_headings'].append(mod_heading)
-        avg_angle_radians = average_angles(obj_attribs['norm_headings_radians'])
+        avg_angle_radians = average_angles(obj_attribs["norm_headings_radians"])
         # print("w*h: ", box_w_h)
         # print("average: ", np.rad2deg(avg_angle_radians))
-            # avg_angle_degree = normalize_degree(math.degrees(avg_angle_radians))
-        obj_attribs['avg_heading'] = avg_angle_radians # in radians
+        # avg_angle_degree = normalize_degree(math.degrees(avg_angle_radians))
+        obj_attribs["avg_heading"] = avg_angle_radians  # in radians
 
 
 def average_angles(angles):
@@ -97,61 +120,68 @@ def average_angles(angles):
     If the average is not defined (e.g. ``average_angles([0, math.pi]))``,
     a ``ValueError`` is raised.
     """
-    
+
     # print("input:", np.rad2deg(angles))
     x = sum(math.cos(a) for a in angles)
     y = sum(math.sin(a) for a in angles)
 
     if x == 0 and y == 0:
-        raise ValueError(
-            "The angle average of the inputs is undefined: %r" % angles)
+        raise ValueError("The angle average of the inputs is undefined: %r" % angles)
 
     # To get outputs from -pi to +pi, delete everything but math.atan2() here.
     return math.fmod(math.atan2(y, x) + 2 * math.pi, 2 * math.pi)
 
-def get_mpcat40_from_raw_category(old_cat: str, category_mapping=category_mapping) -> str:
-    if '#' in old_cat:
+
+def get_mpcat40_from_raw_category(
+    old_cat: str, category_mapping=category_mapping
+) -> str:
+    if "#" in old_cat:
         old_cat = old_cat.replace("#", " ")
 
-    new_cat = category_mapping[category_mapping['raw_category'] == old_cat]['mpcat40'].tolist()[0]
+    new_cat = category_mapping[category_mapping["raw_category"] == old_cat][
+        "mpcat40"
+    ].tolist()[0]
     if "_" in new_cat:
         new_cat = new_cat.replace("_", " ")
     return new_cat
 
+
 def get_clean_objname(name):
-    if '#' in name:
+    if "#" in name:
         name = name.replace("#", " ")
     return name
 
-def obtain_obj_intervention_instances(item: dict, viewpoints: dict, template_func=template_go_toward, short_name=True):
 
-    instr_id = item['instruction_id'].split('_')[0]
+def obtain_obj_intervention_instances(
+    item: dict, viewpoints: dict, template_func=template_go_toward, short_name=True
+):
+    instr_id = item["instruction_id"].split("_")[0]
     # print(instr_id)
 
-    viewpoint_id = item['path'][-1]
-    
+    viewpoint_id = item["path"][-1]
+
     try:
         obj_attrbs = viewpoints[viewpoint_id]
     except KeyError:
-        return 'does not exist'
+        return "does not exist"
 
-    objects = namedtuple('objects', ['object_id', 'object_name','object_avg_heading'])
+    objects = namedtuple("objects", ["object_id", "object_name", "object_avg_heading"])
     # submit_result = [sub for sub in no_end_submit if '_'.join(sub['instr_id'].split('_')[1:]) == item['instruction_id']][0]
 
-    # get objects for the viewpoint 
+    # get objects for the viewpoint
     object_collection = []
     for obj_id, obj in obj_attrbs.items():
         # skip those without bbox
-        if not obj['has_bbox']:
+        if not obj["has_bbox"]:
             continue
         if short_name:
-            name = get_mpcat40_from_raw_category(obj['name'])
+            name = get_mpcat40_from_raw_category(obj["name"])
         else:
-            cat_name = get_mpcat40_from_raw_category(obj['name'])
-            name = get_clean_objname(obj['name'])
+            cat_name = get_mpcat40_from_raw_category(obj["name"])
+            name = get_clean_objname(obj["name"])
         if name in filter_out_objects:
             continue
-        object_collection.append(objects(obj_id, name, obj['avg_heading']))    
+        object_collection.append(objects(obj_id, name, obj["avg_heading"]))
 
     # get object intervention instances without rep object names
     saw_objs = set()
@@ -164,34 +194,38 @@ def obtain_obj_intervention_instances(item: dict, viewpoints: dict, template_fun
         saw_objs.add(obj.object_name)
         # heading_diff_deg = diff_with_direction(obj.object_avg_heading, submit_result['heading'], radians=True)
         # new_item['heading_diff_gt'] = heading_diff_deg # this should be useless
-        new_item['obj_name'] = obj.object_name
-        new_item['obj_heading'] = obj.object_avg_heading
+        new_item["obj_name"] = obj.object_name
+        new_item["obj_heading"] = obj.object_avg_heading
         # new_item['agent_heading'] = submit_result['heading'] # this should be useless
         # assert -180 <= heading_diff_deg <= 180
         # modify temlate as needed
-        instruction = template_func(item['instruction'], obj.object_name)
-        new_item['instruction'] = instruction
-        new_item['instruction_id'] = "_".join([new_item['instruction_id'], str(obj.object_name)])
+        instruction = template_func(item["instruction"], obj.object_name)
+        new_item["instruction"] = instruction
+        new_item["instruction_id"] = "_".join(
+            [new_item["instruction_id"], str(obj.object_name)]
+        )
         obj_instances.append(new_item)
     return obj_instances
 
+
 def get_obj_instances_for_all(no_end, viewpoints, template_func=None, short_name=True):
-    """for loop to ease process
-    """
+    """for loop to ease process"""
     total_instances = []
     for item in tqdm(no_end):
-        obj_instances = obtain_obj_intervention_instances(item, viewpoints, template_func=template_func, short_name=short_name) # type: ignore
+        obj_instances = obtain_obj_intervention_instances(item, viewpoints, template_func=template_func, short_name=short_name)  # type: ignore
         if obj_instances and not isinstance(obj_instances, str):
             total_instances.extend(obj_instances)
     return total_instances
 
+
 def template_nothing(instruction, obj_name):
     # *
     # but still check the end punctuation
-    if instruction[-1] == '.':
+    if instruction[-1] == ".":
         return instruction
-    else: 
-        return instruction[:-1] + '.'
+    else:
+        return instruction[:-1] + "."
+
 
 def filter_instances_by_objects_heading(result_data, instr2input_data, fov_object=60):
     # *
@@ -439,7 +473,7 @@ def boot_draw_intervals(
     binsize=10,
     bin_range=(0, 181),
     width=4,
-    save_dir='',
+    save_dir="",
     **kwargs,
 ):
     # *
@@ -616,11 +650,11 @@ def boot_draw_intervals(
     y = no_intervene_dist
     z = with_intervene_dist
 
-    yerr_low = y[np.newaxis, :] - no_intervene_low[np.newaxis, :] # type: ignore
-    yerr_high = no_intervene_high[np.newaxis, :] - y[np.newaxis, :] # type: ignore
+    yerr_low = y[np.newaxis, :] - no_intervene_low[np.newaxis, :]  # type: ignore
+    yerr_high = no_intervene_high[np.newaxis, :] - y[np.newaxis, :]  # type: ignore
 
-    zerr_low = z[np.newaxis, :] - with_intervene_low[np.newaxis, :] # type: ignore
-    zerr_high = with_intervene_high[np.newaxis, :] - z[np.newaxis, :] # type: ignore
+    zerr_low = z[np.newaxis, :] - with_intervene_low[np.newaxis, :]  # type: ignore
+    zerr_high = with_intervene_high[np.newaxis, :] - z[np.newaxis, :]  # type: ignore
 
     err_bin1 = np.concatenate((yerr_low, yerr_high), axis=0)
     err_bin2 = np.concatenate((zerr_low, zerr_high), axis=0)

@@ -1,24 +1,26 @@
-import os
-import json
 import argparse
+import json
+import os
+
 import matplotlib.pyplot as plt
-
-import pandas as pd
 import numpy as np
+import pandas as pd
 import seaborn as sns
-from scipy.stats import gaussian_kde
-from tqdm import tqdm
 from ipdb import launch_ipdb_on_exception
-
 from rooms.room_utils import (
-    generate_hop_results,
     create_ridge_plot,
+    generate_hop_results,
     load_hop_data_and_results,
 )
-from rooms.room_utils import get_hboot_samples, instr_id2instruction_id
+from scipy.stats import gaussian_kde
+from tqdm import tqdm
+
+from utils.room_utils import get_hboot_samples, instr_id2instruction_id
 
 
-def get_bootstraped_kde(n_hops, hop_data, hop_result, names, boot_num=10, args={}, **kwargs):
+def get_bootstraped_kde(
+    n_hops, hop_data, hop_result, names, boot_num=10, args={}, **kwargs
+):
     # n_hops: list holding the number of hops
 
     rg = kwargs.get("rg", (-1, 1))
@@ -140,7 +142,7 @@ if __name__ == "__main__":
             names=names,
             boot_num=boot_num,
             rg=rg,
-            args=args
+            args=args,
         )
         one_hops = [1]
         hop_1_data, hop_1_result = load_hop_data_and_results(
@@ -153,7 +155,7 @@ if __name__ == "__main__":
             names=names,
             boot_num=boot_num,
             rg=rg,
-            args=args
+            args=args,
         )
         # hop_1_result = generate_hop_results(hops=one_hops, hop_data_list=hop_data, hop_result_list=hop_result, delta=args.use_delta)
         # result 9630_29193_5_stairs

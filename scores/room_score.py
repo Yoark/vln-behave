@@ -1,11 +1,12 @@
 # these scores are for room experiment (1 hop)
 # hard score
-import os
 import argparse
+import os
+
 import numpy as np
 
-from ..utils.file_utils import load_json, load_jsonl
-from ..utils.direction_utils import get_sample_info, bootstrap_sample
+from utils.direction_utils import bootstrap_sample, get_sample_info
+from utils.file_utils import load_json, load_jsonl
 
 scan_viewpoint_label = load_json("./region_data/accurate_scan_viewpoint_label.json")
 

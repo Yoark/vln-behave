@@ -1,13 +1,12 @@
-import matplotlib.pyplot as plt
 import argparse
 import os
+
 import matplotlib as mpl
+import matplotlib.pyplot as plt
 from ipdb import launch_ipdb_on_exception
 
-
-from ..utils.file_utils import load_json
-from ..utils.direction_utils import get_sample_info, bootstrap_sample, boot_draw_total
-
+from utils.direction_utils import boot_draw_total, bootstrap_sample, get_sample_info
+from utils.file_utils import load_json
 
 if __name__ == "__main__":
     parse = argparse.ArgumentParser()
@@ -38,7 +37,6 @@ if __name__ == "__main__":
 
     print(f"save_path: {save_path}, result_path: {result_path}, filename: {filename} ")
     print(f"loading data from {result_path}")
-
 
     if not args.more_templates:
         # * below is the data name used for more templates situation!
@@ -169,7 +167,7 @@ if __name__ == "__main__":
                     name,
                     filter_label,
                     polar=True,
-                    polar_ax=axs[row, col], # type: ignore
+                    polar_ax=axs[row, col],  # type: ignore
                     binsize=10,
                     save_path=save_dir,
                     model_name=args.model_name,

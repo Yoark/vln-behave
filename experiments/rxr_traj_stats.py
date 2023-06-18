@@ -1,9 +1,10 @@
-import numpy as np
 import pathlib as path
-import matplotlib.pyplot as plt
 
-from ..utils.object_utils import diff_with_direction
-from ..utils.file_utils import load_json, read_gz_jsonlines, my_colors
+import matplotlib.pyplot as plt
+import numpy as np
+
+from utils.file_utils import load_json, my_colors, read_gz_jsonlines
+from utils.object_utils import diff_with_direction
 
 result_train = load_json("baselines/submit_train_filtered_0.json")
 angle_diffs = []

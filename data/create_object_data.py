@@ -1,12 +1,14 @@
+import argparse
 import os
 import pathlib
-import argparse
+
 from ipdb import launch_ipdb_on_exception
 from tqdm import tqdm
-from ..utils.file_utils import load_json, load_jsonl, save_jsonl
-from ..utils.object_utils import (
-    get_obj_instances_for_all,
+
+from utils.file_utils import load_json, load_jsonl, save_jsonl
+from utils.object_utils import (
     add_heading_info,
+    get_obj_instances_for_all,
     template_go_toward,
     template_nothing,
 )
@@ -25,14 +27,12 @@ if __name__ == "__main__":
         type=str,
         default="/Users/zijiao/home/research/unit-vln/REVERIE/tasks/REVERIE/data/BBox",
     )
-    args.add_argument('--save_dir', type=str, default='')
+    args.add_argument("--save_dir", type=str, default="")
     args = args.parse_args()
 
     with launch_ipdb_on_exception():
         no_end = load_jsonl(
-            os.path.join(
-                args.baseline_dir, "rxr_no_end_paired_with_ahead.jsonl"
-            )
+            os.path.join(args.baseline_dir, "rxr_no_end_paired_with_ahead.jsonl")
         )
         # no_end_submit = load_json(work_dir.format('stop/data/submit_no_end_paired_with_ahead_0.json'))
         # ahead = load_jsonl(os.path.join(args.truncation_data_path, 'baselines/rxr_ahead_partial.jsonl'))
@@ -52,11 +52,15 @@ if __name__ == "__main__":
             add_heading_info(obj_info)
 
         no_end_intervene = get_obj_instances_for_all(
-            no_end, viewpoints, template_func=template_nothing,
+            no_end,
+            viewpoints,
+            template_func=template_nothing,
         )
 
         obj_intervene = get_obj_instances_for_all(
-            no_end, viewpoints, template_func=template_go_toward,
+            no_end,
+            viewpoints,
+            template_func=template_go_toward,
         )
         all_instr_ids = [item["instruction_id"] for item in no_end_intervene]
         print(len(no_end_intervene), len(obj_intervene))

@@ -1,16 +1,16 @@
-import random
+import argparse
 import os
 import pathlib as path
-import argparse
+import random
 
 from tqdm import tqdm
-from ..utils.direction_utils import (
+
+from utils.direction_utils import (
+    add_period,
     generate_splited_training_data,
     remove_long_samples,
-    add_period,
 )
-from ..utils.file_utils import read_gz_jsonlines, save_jsonl
-
+from utils.file_utils import read_gz_jsonlines, save_jsonl
 
 # pose_trace_dir = path.Path("/Users/zijiao/home/research/data/RxR/pose_traces")
 # rxr_data_path = path.Path("/Users/zijiao/home/research/RxR/visualizations/rxr_data")
@@ -47,8 +47,7 @@ if __name__ == "__main__":
     args = args.parse_args
     split = "rxr_val_unseen"
     bad_samples = [4721, 9015]  # bad path ids
-    
-    
+
     pose_trace_dir = path.Path(args.pose_trace_dir)
     rxr_data_path = path.Path(args.rxr_data_path)
     test = read_gz_jsonlines(rxr_data_path / "rxr_val_unseen_guide.jsonl.gz")
