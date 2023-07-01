@@ -15,11 +15,12 @@ _To be successful, Vision-and-Language Navigation (VLN) agents must be able to g
 **Bibtex**
 
 ```
-@inproceedings{yang2023vlnbehave,
-    title={Behavioral Analysis of Vision-and-Language Navigation Agents},
-    author={Zijiao Yang and Arjun Majumdar and Stefan Lee},
-    booktitle={Computer Vision and Pattern Recognition (CVPR)},
-    year={2023}
+@inproceedings{yang2023behavioral,
+  title={Behavioral Analysis of Vision-and-Language Navigation Agents},
+  author={Yang, Zijiao and Majumdar, Arjun and Lee, Stefan},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={2574--2582},
+  year={2023}
 }
 ```
 
